@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tokens Per Second Visualizer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container my-4">
+    <h1 class="text-center">Tokens Per Second Visualizer</h1>
+    <div class="my-4">
+      <input type="number" id="tps" class="form-control" placeholder="Enter tokens per second" value="5">
+      <select id="presetText" class="form-control my-2">
+        <option value="random">Random Text</option>
+        <option value="prose">Prose</option>
+        <option value="code">Code</option>
+        <option value="bullets">Bullet Points</option>
+      </select>
+      <button class="btn btn-primary my-2" onclick="start()">Start</button>
+      <button class="btn btn-secondary my-2" onclick="stop()">Stop</button>
+      <button class="btn btn-danger my-2" onclick="clearOutput()">Clear</button>
+    </div>
+    <textarea id="output" class="form-control" rows="10" readonly></textarea>
+  </div>
+
+  <script>
+    let interval;
+    const texts = {
+      prose: "Lorem ipsum dolor sit amet consectetur adipiscing elit. Sed euismod ultrices massa, et pharetra justo fermentum nec. Aliquam erat volutpat.",
+      code: "let x = 10;\nfunction foo(bar) {\n  return bar * 2;\n}\nfoo(x);",
+      bullets: "- Item 1\n- Item 2\n- Item 3",
+    };
+
+    function generateToken() {
+      const tokenLength = Math.floor(Math.random() * 3) + 2;
+      return Array.from({ length: tokenLength }, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join('');
+    }
+
+    let currentPosition = 0;
+function start() {
+  stop();
+  const tps = parseInt(document.getElementById('tps').value, 10);
+  const preset = document.getElementById('presetText').value;
+  const output = document.getElementById('output');
+
+  let tokens;
+  if (preset === 'random') {
+    tokens = new Array(tps).fill(0).map(generateToken);
+  } else {
+    const allTokens = texts[preset].split(' ');
+    tokens = allTokens.slice(currentPosition, currentPosition + tps);
+    currentPosition = (currentPosition + tps) % allTokens.length;
+  }
+
+  tokens.forEach((token, i) => {
+    setTimeout(() => {
+      output.value += token + ' ';
+    }, (1000 / tps) * i);
+  });
+
+  interval = setInterval(() => {
+    if (preset === 'random') {
+      tokens = new Array(tps).fill(0).map(generateToken);
+    } else {
+      const allTokens = texts[preset].split(' ');
+      tokens = allTokens.slice(currentPosition, currentPosition + tps);
+      currentPosition = (currentPosition + tps) % allTokens.length;
+    }
+
+    tokens.forEach((token, i) => {
+      setTimeout(() => {
+        output.value += token + ' ';
+      }, (1000 / tps) * i);
+    });
+  }, 1000);
+}
+
+
+    function stop() {
+      clearInterval(interval);
+    }
+
+    function clearOutput() {
+      document.getElementById('output').value = '';
+    }
+  </script>
+</body>
+</html>
+
